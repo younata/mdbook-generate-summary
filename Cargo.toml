@@ -1,0 +1,22 @@
+[package]
+name = "mdbook-generate-summary"
+version = "0.1.0"
+authors = ["Rachel Brindle <rachel@rachelbrindle.com>"]
+license = "MIT"
+description = "A tool to automatically generate mdBook SUMMARY.md files"
+readme = "README.md"
+homepage = "https://github.com/younata/mdbook-generate-summary"
+repository = "https://github.com/younata/mdbook-generate-summary"
+keywords = ["mdbook", "generate", "summary"]
+categories = ["command-line-utilities"]
+edition = "2018"
+
+[dependencies]
+structopt = "0.2.10"
+glob = "0.3.0"
+itertools = "0.8"
+
+[dev-dependencies]
+assert_cmd = "0.10"
+predicates = "1"
+tempfile = "3"
