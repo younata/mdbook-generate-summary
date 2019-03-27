@@ -55,7 +55,8 @@ fn generates_summary_md() -> Result<(), Box<std::error::Error>> {
 
     assert_eq!(
         received_summary,
-        "- [A Thing](flat_file.md)
+        "# https://github.com/rust-lang-nursery/mdBook/issues/677
+- [A Thing](flat_file.md)
     - [Moar Content](other_dir/some_content.md)
 - [Subdirectory](subdir/README.md)
     - [Other](subdir/other.md)

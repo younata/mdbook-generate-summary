@@ -56,6 +56,9 @@ fn main() {
     let mut summary = File::create(base_path.join("SUMMARY.md"))
         .expect("Failed to create SUMMARY.md");
 
+    writeln!(summary, "# https://github.com/rust-lang-nursery/mdBook/issues/677")
+        .expect("Unable to write title to file");
+
     for line in entry_lines {
         writeln!(summary, "{}", line).expect("Unable to write to file");
     }
