@@ -35,16 +35,26 @@ fn relative_path(path: &std::path::PathBuf, base_path: &std::path::PathBuf) -> s
         .to_path_buf()
 }
 
+fn write_line(file: &mut File, line: &str, verbose: bool) {
+    writeln!(file, "{}", line).expect("Unable to write to file");
+    if verbose {
+        println!("{}", line);
+    }
+}
+
 #[derive(StructOpt)]
 struct Cli {
     #[structopt(parse(from_os_str), default_value="src/")]
     base_path: std::path::PathBuf,
+    #[structopt(short = "v", long = "verbose")]
+    verbose: bool,
 }
 
 fn main() {
     let args = Cli::from_args();
 
     let base_path = args.base_path;
+    let verbose = args.verbose;
     let glob_string = String::from(base_path.to_str().expect("given path should be a string")) + "/**/*.md";
     let entries = glob(&glob_string)
         .expect("Failed to read glob pattern")
@@ -56,11 +66,10 @@ fn main() {
     let mut summary = File::create(base_path.join("SUMMARY.md"))
         .expect("Failed to create SUMMARY.md");
 
-    writeln!(summary, "# https://github.com/rust-lang-nursery/mdBook/issues/677")
-        .expect("Unable to write title to file");
+    write_line(&mut summary, "# https://github.com/rust-lang-nursery/mdBook/issues/677", verbose);
 
     for line in entry_lines {
-        writeln!(summary, "{}", line).expect("Unable to write to file");
+        write_line(&mut summary, line.as_str(), verbose);
     }
 }
 

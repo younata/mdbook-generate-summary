@@ -1,5 +1,6 @@
 use std::iter::repeat;
 use std::cmp::Ordering;
+use std::ffi::OsStr;
 
 #[derive(Debug, Eq)]
 pub struct SummaryEntry {
@@ -9,15 +10,15 @@ pub struct SummaryEntry {
 
 impl SummaryEntry {
     pub fn summary_line(&self) -> String {
-        let indentation = repeat("    ").take(self.indentation_level(true)).collect::<String>();
+        let indentation = repeat("    ").take(self.indentation_level()).collect::<String>();
         indentation + "- " + &self.link()
     }
 
-    fn indentation_level(&self, dedent_for_readme: bool) -> usize {
+    fn indentation_level(&self) -> usize {
         let amount = self.path_string().matches('/').count();
         if amount == 0 {
             return 0
-        } else if dedent_for_readme && self.path_string().ends_with("README.md") {
+        } else if self.path_string().ends_with("README.md") {
             return amount - 1
         }
         amount
@@ -30,16 +31,19 @@ impl SummaryEntry {
     fn path_string(&self) -> &str {
         self.path.to_str().expect("Expected path to convert to string")
     }
+
+    fn html_path(&self) -> std::path::PathBuf {
+        if self.path.file_name() == Some(OsStr::new("README.md")) {
+            self.path.parent().unwrap_or(std::path::Path::new("")).to_path_buf()
+        } else {
+            self.path.clone()
+        }
+    }
 }
 
 impl Ord for SummaryEntry {
     fn cmp(&self, other: &Self) -> Ordering {
-        let indentation_ordering = self.indentation_level(false).cmp(&other.indentation_level(false));
-        if indentation_ordering == Ordering::Equal {
-            self.path.cmp(&other.path)
-        } else {
-            indentation_ordering
-        }
+        self.html_path().cmp(&other.html_path())
     }
 }
 
@@ -79,6 +83,41 @@ mod test {
             SummaryEntry { path: PathBuf::from("baz/bar.md"), title: "Some Title".to_string() },
             SummaryEntry { path: PathBuf::from("foo/README.md"), title: "Some Title".to_string() },
             SummaryEntry { path: PathBuf::from("foo/bar.md"), title: "Some Title".to_string() },
+        ];
+
+        itertools::assert_equal(entries.into_iter().sorted(), sorted_entries)
+    }
+
+    #[test]
+    fn ordered_2() {
+        let entries = vec![
+            SummaryEntry { path: PathBuf::from("food/recipes/README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("docker/README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("ci/concourse.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("ios/README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("food/recipes/soup.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("meta/README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("ci/README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("food/README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("ios/popover.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("rust/README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("meta/setup.md"), title: "Some Title".to_string() },
+        ];
+
+        let sorted_entries = vec![
+            SummaryEntry { path: PathBuf::from("README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("ci/README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("ci/concourse.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("docker/README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("food/README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("food/recipes/README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("food/recipes/soup.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("ios/README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("ios/popover.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("meta/README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("meta/setup.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("rust/README.md"), title: "Some Title".to_string() },
         ];
 
         itertools::assert_equal(entries.into_iter().sorted(), sorted_entries)
@@ -126,7 +165,7 @@ mod test {
             path: PathBuf::from("README.md"),
             title: "A Title".to_string(),
         };
-        assert_eq!(entry.indentation_level(true), 0);
+        assert_eq!(entry.indentation_level(), 0);
     }
 
     #[test]
@@ -135,7 +174,7 @@ mod test {
             path: PathBuf::from("other.md"),
             title: "A Title".to_string(),
         };
-        assert_eq!(entry.indentation_level(true), 0);
+        assert_eq!(entry.indentation_level(), 0);
     }
 
     #[test]
@@ -144,7 +183,7 @@ mod test {
             path: PathBuf::from("baz/other.md"),
             title: "A Title".to_string(),
         };
-        assert_eq!(entry.indentation_level(true), 1);
+        assert_eq!(entry.indentation_level(), 1);
     }
 
     #[test]
@@ -153,7 +192,7 @@ mod test {
             path: PathBuf::from("baz/qux/other.md"),
             title: "A Title".to_string(),
         };
-        assert_eq!(entry.indentation_level(true), 2);
+        assert_eq!(entry.indentation_level(), 2);
     }
 
     #[test]
@@ -162,6 +201,6 @@ mod test {
             path: PathBuf::from("baz/qux/whatever/other.md"),
             title: "A Title".to_string(),
         };
-        assert_eq!(entry.indentation_level(true), 3);
+        assert_eq!(entry.indentation_level(), 3);
     }
 }
