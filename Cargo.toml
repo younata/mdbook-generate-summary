@@ -1,6 +1,6 @@
 [package]
 name = "mdbook-generate-summary"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Rachel Brindle <rachel@rachelbrindle.com>"]
 license = "MIT"
 description = "A tool to automatically generate mdBook SUMMARY.md files"
