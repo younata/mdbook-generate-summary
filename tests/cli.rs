@@ -14,7 +14,7 @@ fn create(path: PathBuf, contents: String) -> File {
 }
 
 #[test]
-fn generates_summary_md() -> Result<(), Box<std::error::Error>> {
+fn generates_summary_md() -> Result<(), Box<dyn std::error::Error>> {
     let dir = tempdir()?;
     let path = dir.path();
 

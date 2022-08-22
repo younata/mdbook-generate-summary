@@ -1,3 +1,4 @@
+use human_sort::compare;
 use std::iter::repeat;
 use std::cmp::Ordering;
 use std::ffi::OsStr;
@@ -43,7 +44,7 @@ impl SummaryEntry {
 
 impl Ord for SummaryEntry {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.html_path().cmp(&other.html_path())
+        compare(self.html_path().to_str().unwrap_or(""), &other.html_path().to_str().unwrap_or(""))
     }
 }
 
@@ -74,11 +75,19 @@ mod test {
             SummaryEntry { path: PathBuf::from("baz/bar.md"), title: "Some Title".to_string() },
             SummaryEntry { path: PathBuf::from("baz/README.md"), title: "Some Title".to_string() },
             SummaryEntry { path: PathBuf::from("baz/aoeu.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("baz/1.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("baz/10.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("baz/2.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("baz/20.md"), title: "Some Title".to_string() },
         ];
 
         let sorted_entries = vec![
             SummaryEntry { path: PathBuf::from("README.md"), title: "Some Title".to_string() },
             SummaryEntry { path: PathBuf::from("baz/README.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("baz/1.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("baz/2.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("baz/10.md"), title: "Some Title".to_string() },
+            SummaryEntry { path: PathBuf::from("baz/20.md"), title: "Some Title".to_string() },
             SummaryEntry { path: PathBuf::from("baz/aoeu.md"), title: "Some Title".to_string() },
             SummaryEntry { path: PathBuf::from("baz/bar.md"), title: "Some Title".to_string() },
             SummaryEntry { path: PathBuf::from("foo/README.md"), title: "Some Title".to_string() },
